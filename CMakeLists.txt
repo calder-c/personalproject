@@ -6,7 +6,8 @@ find_package(SFML 3 REQUIRED COMPONENTS Graphics Audio Window System)
 add_executable(PhysicsSim src/main.cpp
         src/body.h
         src/include.h
-        src/definitions.h)
+        src/definitions.h
+)
 target_link_libraries(PhysicsSim PRIVATE
         SFML::Graphics
         SFML::Audio

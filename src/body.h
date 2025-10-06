@@ -30,12 +30,23 @@ public:
     // velocity measured in m/s
     // acceleration measured in m/s^2
     // x, y = meters
-    RigidBody(double mass_, double velocity_, double acceleration_, double x_, double y_, double width_, double height_) : mass(mass_), velocity(velocity_), acceleration(acceleration_), x(x_), y(y_), width(width_), height(height_)
-    {std::cout << "Initialized RigidBody with initial values:\nmass [kg]: " << this->mass << "\nvelocity [m/s]: " << velocity << "\nacceleration [m/s^2]: " << acceleration << "\nx, y: (" << x << ", " << y << ")";}
-    void render(sf::RenderWindow & window) {
-
+    RigidBody(double mass_, double velocity_, double acceleration_, double x_, double y_, float width_, float height_) : mass(mass_), velocity(velocity_), acceleration(acceleration_), x(x_), y(y_), width(width_), height(height_) {
+        shape = sf::RectangleShape{};
+        shape.setFillColor(orange);
+        shape.setSize(sf::Vector2f(width, height));
+        shape.setOrigin(sf::Vector2f(width/2, height/2));
+        std::cout << "Initialized RigidBody with initial values:\nmass [kg]: " << this->mass << "\nvelocity [m/s]: " << velocity << "\nacceleration [m/s^2]: " << acceleration << "\nx, y: (" << x << ", " << y << ")";
     }
-private:
-    double mass, velocity, acceleration, height, width, x, y;
+    void render(sf::RenderWindow & window) {
+        //update the shape that will be rendered to the x, y position of the object
+        shape.setPosition(sf::Vector2f(x, y));
+        window.draw(shape);
+        sf::Angle angle1 = sf::degrees(1);
+        shape.rotate(angle1);
+    }
+    // Public for ease of use but ideally these should be private
+    double mass, velocity, acceleration, x, y;
+    float height, width;
+    sf::RectangleShape shape;
     std::vector<NewtonForce> forces;
 };
