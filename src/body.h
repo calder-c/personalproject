@@ -31,9 +31,13 @@ public:
     // acceleration measured in m/s^2
     // x, y = meters
     RigidBody(double mass_, double velocity_, double acceleration_, double x_, double y_, float width_, float height_) : mass(mass_), velocity(velocity_), acceleration(acceleration_), x(x_), y(y_), width(width_), height(height_) {
+        //this defines the shape to be able to render through SFML
         shape = sf::RectangleShape{};
+        //sets color
         shape.setFillColor(orange);
+        //sets width, height
         shape.setSize(sf::Vector2f(width, height));
+        //sets the middle point of the rectangle
         shape.setOrigin(sf::Vector2f(width/2, height/2));
         std::cout << "Initialized RigidBody with initial values:\nmass [kg]: " << this->mass << "\nvelocity [m/s]: " << velocity << "\nacceleration [m/s^2]: " << acceleration << "\nx, y: (" << x << ", " << y << ")";
     }
