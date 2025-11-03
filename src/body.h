@@ -37,7 +37,7 @@ public:
     double mass, velocity, acceleration, x, y;
     float height, width;
     int id;
-    sf::Angle degrees;
+    sf::Angle degreesRotation;
     sf::RectangleShape shape;
     std::vector<NewtonForce> forces;
     std::vector<Collision> activeCollisions;
@@ -45,7 +45,7 @@ public:
     // velocity measured in m/s
     // acceleration measured in m/s^2
     // x, y = meters
-    RigidBody(double mass_, double velocity_, double acceleration_, double x_, double y_, float width_, float height_, int id_, sf::Angle degrees_) : mass(mass_), velocity(velocity_), acceleration(acceleration_), x(x_), y(y_), width(width_), height(height_), degrees(degrees_) {
+    RigidBody(double mass_, double velocity_, double acceleration_, double x_, double y_, float width_, float height_, int id_, sf::Angle degrees_) : mass(mass_), velocity(velocity_), acceleration(acceleration_), x(x_), y(y_), width(width_), height(height_), degreesRotation(degrees_) {
         //this defines the shape to be able to render through SFML
         srand(time(NULL));
         shape = sf::RectangleShape{};
@@ -67,25 +67,33 @@ public:
     }
     void checkCollisions (std::vector<RigidBody*> & activeBodies) {
         for (auto & body : activeBodies) {
-            if (this->x <= body->x+body->width/2 && this->x >= body->x-body->width/2 && this->y <= body->y+body->height/2 && this->y >= body->y-body->height/2) {
-                std::cout << "RigidBody with id " << id << " is colliding with RigidBody << " << id;
-                double collision_x, collision_y;
-                this->activeCollisions.emplace_back(body, collision_x, collision_y);
-                body->activeCollisions.emplace_back(this, collision_x, collision_y);
+            if (body->id != this->id) {
+                bool colliding = false;
+                sf::FloatRect boundingBox1 = this->shape.getGlobalBounds();
+                sf::FloatRect boundingBox2 = body->shape.getGlobalBounds();
+                if (std::optional intersection = boundingBox1.findIntersection(boundingBox2)) {
+                    colliding = true;
+                }
+                if (colliding) {
+                    std::cout << "RigidBody with id " << id << " is colliding with RigidBody << " << id;
+                    double collision_x, collision_y;
+                    this->activeCollisions.emplace_back(body, collision_x, collision_y);
+                    body->activeCollisions.emplace_back(this, collision_x, collision_y);
 
+
+                }
             }
+
         }
     }
     void render(sf::RenderWindow & window) {
-        //update the shape that will be rendered to the x, y position of the object
-        shape.setPosition(sf::Vector2f(x, y));
-        shape.setRotation(degrees);
         window.draw(shape);
-
     }
     void update() {
         for (auto & force : forces) {
 
         }
+        shape.setPosition(sf::Vector2f(x, y));
+        shape.setRotation(degreesRotation);
     }
 };
