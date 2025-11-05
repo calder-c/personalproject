@@ -1,51 +1,31 @@
 #include "definitions.h"
 #include "include.h"
+#include "utils.h"
 class RigidBody;
 struct Collision {
-    RigidBody* body;
+    RigidBody* body1;
+    RigidBody* body2;
+    int collisionId;
     double collision_x, collision_y;
-    Collision(RigidBody* body_, double collision_x_, double collision_y_) : body(body_), collision_x(collision_x_), collision_y(collision_y_){}
-};
-struct NewtonForce {
-    // magnitude measured in newtons
-    static std::pair<double, double> dirToXY(double dir) {
-        double x = cos(dir * (PI / 180));
-        double y = sin(dir * (PI / 180));
-        if (x - trunc(x) < 0.001) {
-            x = trunc(x);
-        }
-        if (y - trunc(y) < 0.001) {
-            y = trunc(y);
-        }
-        return std::pair<double, double>(x, y);
-    }
-    int mag;
-    double dirX, dirY;
-    NewtonForce(int mag_, double x_, double y_) : mag(mag_), dirX(x_), dirY(y_) {
-        if (dirX >= 1 && dirX <= -1 ) {
-            //continue the program
-        } else {
-            //Direction x, y can't be more than 1 or -1 because that would mean a stronger force
-            throw(std::range_error("Direction out of range"));
-        }
+    Collision(RigidBody* body1_, RigidBody* body2_, double collision_x_, double collision_y_, int collisionId_) : body1(body1_), body2(body2_), collision_x(collision_x_), collision_y(collision_y_), collisionId(collisionId_) {
     }
 };
 
 class RigidBody {
 public:
     // Public for ease of use but ideally these should be private
-    double mass, velocity, acceleration, x, y;
+    double mass, x, y;
+    sf::Vector2<double> velocity, acceleration;
     float height, width;
     int id;
     sf::Angle degreesRotation;
     sf::RectangleShape shape;
-    std::vector<NewtonForce> forces;
-    std::vector<Collision> activeCollisions;
+    std::vector<sf::Vector2<double>> forces;
     // mass measured in kg
     // velocity measured in m/s
     // acceleration measured in m/s^2
     // x, y = meters
-    RigidBody(double mass_, double velocity_, double acceleration_, double x_, double y_, float width_, float height_, int id_, sf::Angle degrees_) : mass(mass_), velocity(velocity_), acceleration(acceleration_), x(x_), y(y_), width(width_), height(height_), degreesRotation(degrees_) {
+    RigidBody(double mass_, sf::Vector2<double> velocity_, sf::Vector2<double> acceleration_, double x_, double y_, float width_, float height_, int id_, sf::Angle degrees_) : mass(mass_), velocity(velocity_), acceleration(acceleration_), x(x_), y(y_), width(width_), height(height_), degreesRotation(degrees_) {
         //this defines the shape to be able to render through SFML
         srand(time(NULL));
         shape = sf::RectangleShape{};
@@ -63,28 +43,57 @@ public:
         } else {
             this->id = id_;
         }
-        std::cout << "Initialized RigidBody [id = " << id << "] with initial values:\nmass [kg]: " << this->mass << "\nvelocity [m/s]: " << velocity << "\nacceleration [m/s^2]: " << acceleration << "\nx, y: (" << x << ", " << y << ")";
+
     }
-    void checkCollisions (std::vector<RigidBody*> & activeBodies) {
+    void checkCollisions (std::vector<RigidBody*> & activeBodies, std::vector<Collision> & collisionsList) {
         for (auto & body : activeBodies) {
             if (body->id != this->id) {
-                bool colliding = false;
                 sf::FloatRect boundingBox1 = this->shape.getGlobalBounds();
                 sf::FloatRect boundingBox2 = body->shape.getGlobalBounds();
                 if (std::optional intersection = boundingBox1.findIntersection(boundingBox2)) {
-                    colliding = true;
-                }
-                if (colliding) {
-                    std::cout << "RigidBody with id " << id << " is colliding with RigidBody << " << id;
                     double collision_x, collision_y;
-                    this->activeCollisions.emplace_back(body, collision_x, collision_y);
-                    body->activeCollisions.emplace_back(this, collision_x, collision_y);
+                    bool detectedDuplicate = false;
+                    int uniqueId = generateUniqueId(this->id, body->id);
+                    for (auto & collision : collisionsList) {
+                        if (collision.collisionId == uniqueId) {
+                            detectedDuplicate = true;
+                            break;
+                        }
+                    }
+                    if (!detectedDuplicate) {
+                        std::cout << uniqueId << "\n";
+                        std::cout << this->id << " Registered collision with " << body->id << "\n";
+                        collisionsList.emplace_back(this, body, collision_x, collision_y, uniqueId);
+                        this->shape.setFillColor(debugRed);
+                        body->shape.setFillColor(debugRed);
+                    }
 
+
+                } else {
+                    int uniqueId = generateUniqueId(this->id, body->id);
+                    for (auto it = collisionsList.begin(); it != collisionsList.end();) {
+
+                        // Remove even elements
+                        if (uniqueId == it->collisionId) {
+                            it = collisionsList.erase(it);
+                            std::cout << "Stopped colliding \n";
+                        }else {
+                            it++;
+                        }
+
+                    }
+                    this->shape.setFillColor(debugGreen);
+                    body->shape.setFillColor(debugGreen);
 
                 }
             }
 
         }
+    }
+    void updatePosition(double dt) {
+        velocity += acceleration;
+        x += velocity.x * dt;
+        y += velocity.y * dt;
     }
     void render(sf::RenderWindow & window) {
         window.draw(shape);
