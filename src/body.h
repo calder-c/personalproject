@@ -51,7 +51,11 @@ public:
                 sf::FloatRect boundingBox1 = this->shape.getGlobalBounds();
                 sf::FloatRect boundingBox2 = body->shape.getGlobalBounds();
                 if (std::optional intersection = boundingBox1.findIntersection(boundingBox2)) {
+
                     double collision_x, collision_y;
+                    sf::Vector2<float> collisionPoint = intersection->getCenter();
+                    collision_x = collisionPoint.x;
+                    collision_y = collisionPoint.y;
                     bool detectedDuplicate = false;
                     int uniqueId = generateUniqueId(this->id, body->id);
                     for (auto & collision : collisionsList) {
@@ -61,8 +65,9 @@ public:
                         }
                     }
                     if (!detectedDuplicate) {
+
                         std::cout << uniqueId << "\n";
-                        std::cout << this->id << " Registered collision with " << body->id << "\n";
+                        std::cout << this->id << " Registered collision (" << collision_x << ", " << collision_y << ") with " << body->id << "\n";
                         collisionsList.emplace_back(this, body, collision_x, collision_y, uniqueId);
                         this->shape.setFillColor(debugRed);
                         body->shape.setFillColor(debugRed);
@@ -70,7 +75,7 @@ public:
 
 
                 } else {
-                    int uniqueId = generateUniqueId(this->id, body->id);
+                    const int uniqueId = generateUniqueId(this->id, body->id);
                     for (auto it = collisionsList.begin(); it != collisionsList.end();) {
 
                         // Remove even elements
@@ -104,5 +109,19 @@ public:
         }
         shape.setPosition(sf::Vector2f(x, y));
         shape.setRotation(degreesRotation);
+    }
+};
+
+class PhysicsEvaluator {
+    double gravity;
+public:
+    PhysicsEvaluator(double gravity_) : gravity(gravity_){}
+    PhysicsEvaluator() {
+        gravity = earth_g;
+    }
+    void evaluateCollision(Collision* collision) {
+        sf::Vector2<double> m1 = collision->body1->velocity * collision->body1->mass;
+        sf::Vector2<double> m2 = collision->body2->velocity * collision->body2->mass;
+        sf::Vector2<double> normal;
     }
 };
