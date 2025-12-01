@@ -3,7 +3,7 @@ class DebugPoint {
     public:
         double x, y;
         sf::CircleShape point;
-        DebugPoint(double x_, double y_, double radius) : x(x_), y(y_) {
+        DebugPoint(float x_, float y_, float radius) : x(x_), y(y_) {
             point = sf::CircleShape();
             point.setPosition(sf::Vector2f(x, y));
             point.setRadius(radius);

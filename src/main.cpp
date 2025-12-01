@@ -3,8 +3,8 @@
 int main() {
     sf::RenderWindow window(sf::VideoMode({1920, 1080}), "Physics Simulation Personal Project");
     //test body for now
-    RigidBody testBody1(1, sf::Vector2<double>{1, 1}, sf::Vector2<double>{0.1, 1}, 850, 500, 40, 40, 1, sf::degrees(0));
-    RigidBody testBody2(1, sf::Vector2<double>{1, 1}, sf::Vector2<double>{1, 1}, 590, 500, 40, 40, 2, sf::degrees(0));
+    RigidBody testBody1(1, sf::Vector2<float>{10, 1}, sf::Vector2<float>{1, 1}, 850, 500, 40, 40, 1, sf::degrees(0), 0, 0);
+    RigidBody testBody2(1, sf::Vector2<float>{10, 1}, sf::Vector2<float>{100, 1}, 590, 500, 40, 40, 2, sf::degrees(0), 0, 0);
     std::vector<RigidBody*> activeBodies;
     std::vector<DebugPoint*> debugPoints;
     activeBodies.push_back(&testBody1);
@@ -12,7 +12,7 @@ int main() {
     std::vector<Collision> collisionsList{};
     PhysicsEvaluator physicsEvaluator{};
     sf::Clock deltaClock;
-    sf::Time dt;
+    sf::Time dt = sf::milliseconds(16.6667);
     bool firstFrame = true;
     while (window.isOpen())
     {
@@ -24,15 +24,9 @@ int main() {
             for (auto & collision : collisionsList) {
                 auto* newPoint = new DebugPoint(collision.collision_x, collision.collision_y, 5);
                 debugPoints.push_back(newPoint);
-                collision.body1->acceleration.x = 0;
-                collision.body1->acceleration.y = 0;
-                collision.body1->velocity.x = 0;
-                collision.body1->velocity.y = 0;
-                collision.body2->acceleration.x = 0;
-                collision.body2->acceleration.y = 0;
-                collision.body2->velocity.x = 0;
-                collision.body2->velocity.y = 0;
-                physicsEvaluator.evaluateCollision(&collision);
+                collision.body1->freeze();
+                collision.body2->freeze();
+                physicsEvaluator.evaluateCollisionVelocity(&collision);
 
             }
         }
