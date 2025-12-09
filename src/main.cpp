@@ -6,15 +6,19 @@ int main() {
     window.setVerticalSyncEnabled(false);
     sf::Clock clock;
     //sf::Time dt = sf::milliseconds(16.6667);
-    const float dt = 1.0/60.0;
+    const float fps = 60;
+    const float dt = 1.0/fps;
+    const float subtick = 100;
     float accumulator = 0.0f;
-    std::vector<Point> objList{};
-    objList.push_back(Point{sf::Vector2f(200, 300), sf::Vector2f(1, 98), 10});
-    objList.push_back(Point{sf::Vector2f(250, 200), sf::Vector2f(1, 98), 10});
-    objList.push_back(Point{sf::Vector2f(220, 100), sf::Vector2f(1, 98), 10});
-    objList.push_back(Point{sf::Vector2f(210, 0), sf::Vector2f(1, 98), 10});
-    objList.push_back(Point{sf::Vector2f(0, 400), sf::Vector2f(1, 98), 10});
-    objList.push_back(Point{sf::Vector2f(60, 400), sf::Vector2f(61, 400), sf::Vector2f(1, 98), 10});
+    Point* p1 = new Point{sf::Vector2f(10, 20), sf::Vector2f(0, 98), 1, 1};
+    Point* p2 = new Point{sf::Vector2f(30, 50), sf::Vector2f(0, 98), 1, 1};
+    Point* p3 = new Point{sf::Vector2f(70, 60), sf::Vector2f(0, 98), 1, 1};
+    Point* p4 = new Point{sf::Vector2f(70, 60), sf::Vector2f(10, 98), 1, 1};
+    std::vector<Point*> pointList{p1, p2, p3, p4};
+    std::vector<LineConstraint> lineList{};
+    lineList.push_back(LineConstraint{p1, p2, float(1)});
+    lineList.push_back(LineConstraint{p2, p3, float(1)});
+    lineList.push_back(LineConstraint{p3, p1, float(1)});
     while (window.isOpen())
     {
         float frameTime = clock.restart().asSeconds();
@@ -26,18 +30,25 @@ int main() {
                 window.close();
         }
         while (accumulator >= dt) {
-            for (auto & obj : objList) {
-                obj.applyScreenConstraint();
-                obj.update(dt);
+            for (auto & obj : pointList) {
+                obj->applyScreenConstraint();
+                obj->update(dt);
+
+            }
+            for (int i=0; i<subtick; i++) {
+                for (auto & line : lineList) {
+                    line.applyLineConstraint();
+                }
             }
             accumulator -= dt;
         }
         window.clear();
-        for (auto & obj : objList) {
-
-            obj.draw(window);
+        for (auto & obj : pointList) {
+            obj->draw(window);
         }
-
+        for (auto & line : lineList) {
+            line.draw(window);
+        }
         window.display();
 
 

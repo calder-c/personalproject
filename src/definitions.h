@@ -11,6 +11,9 @@ sf::Color orange1(242, 101, 34);
 sf::Color orange2(141, 56, 22);
 sf::Color debugRed(240, 0, 0);
 sf::Color debugGreen(0, 240, 0);
+
 const int SCREEN_WIDTH = 960;
 const int SCREEN_HEIGHT = 540;
+
+
 //some helpful definitions
