@@ -9,39 +9,60 @@ int main() {
     const float fps = 60;
     const float dt = 1.0/fps;
     const float subtick = 100;
+    bool simulating = false;
     float accumulator = 0.0f;
-    Point* p1 = new Point{sf::Vector2f(10, 20), sf::Vector2f(0, 98), 1, 1};
-    Point* p2 = new Point{sf::Vector2f(30, 50), sf::Vector2f(0, 98), 1, 1};
-    Point* p3 = new Point{sf::Vector2f(70, 60), sf::Vector2f(0, 98), 1, 1};
-    Point* p4 = new Point{sf::Vector2f(70, 60), sf::Vector2f(10, 98), 1, 1};
-    std::vector<Point*> pointList{p1, p2, p3, p4};
+
+    // Point* p1 = new Point{sf::Vector2f(100, 100), sf::Vector2f(110, 98), 1, 1};
+    // Point* p2 = new Point{sf::Vector2f(200, 100), sf::Vector2f(0, 98), 1, 1};
+    // Point* p3 = new Point{sf::Vector2f(200, 200), sf::Vector2f(0, 98), 1, 1};
+    // Point* p4 = new Point{sf::Vector2f(100, 200), sf::Vector2f(0, 98), 1, 1};
+    //
+    std::vector<Point*> pointList{};
     std::vector<LineConstraint> lineList{};
-    lineList.push_back(LineConstraint{p1, p2, float(1)});
-    lineList.push_back(LineConstraint{p2, p3, float(1)});
-    lineList.push_back(LineConstraint{p3, p1, float(1)});
+    // float enforceAmount = 1;
+    // lineList.push_back(LineConstraint{p1, p2, enforceAmount});
+    // lineList.push_back(LineConstraint{p2, p3, enforceAmount});
+    // lineList.push_back(LineConstraint{p3, p4, enforceAmount});
+    // lineList.push_back(LineConstraint{p4, p1, enforceAmount});
+    // lineList.push_back(LineConstraint{p3, p1, enforceAmount});
+
+    Square s1{sf::Vector2f(400, 400), lineList, pointList, 150, 0, 0};
+    Point* p1 = new Point{sf::Vector2f(100, 200), sf::Vector2f(0, 98), 1, 1};
+    pointList.push_back(p1);
+
     while (window.isOpen())
     {
         float frameTime = clock.restart().asSeconds();
-        accumulator += frameTime;
+
         while (const std::optional event = window.pollEvent())
         {
             //checks for close event
-            if (event->is<sf::Event::Closed>())
+            if (event->is<sf::Event::Closed>()) {
                 window.close();
-        }
-        while (accumulator >= dt) {
-            for (auto & obj : pointList) {
-                obj->applyScreenConstraint();
-                obj->update(dt);
-
-            }
-            for (int i=0; i<subtick; i++) {
-                for (auto & line : lineList) {
-                    line.applyLineConstraint();
+            } else if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
+            {
+                if (keyPressed->scancode == sf::Keyboard::Scancode::Space) {
+                    simulating = !simulating;
                 }
             }
-            accumulator -= dt;
         }
+        if (simulating) {
+            accumulator += frameTime;
+            while (accumulator >= dt) {
+                for (auto & obj : pointList) {
+                    obj->applyScreenConstraint();
+                    obj->update(dt);
+
+                }
+                for (int i=0; i<subtick; i++) {
+                    for (auto & line : lineList) {
+                        line.applyLineConstraint();
+                    }
+                }
+                accumulator -= dt;
+            }
+        }
+
         window.clear();
         for (auto & obj : pointList) {
             obj->draw(window);
