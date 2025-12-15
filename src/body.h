@@ -8,23 +8,13 @@ public:
     sf::CircleShape shape;
     float radius;
     float e;
-    Point(sf::Vector2f currentPos_, sf::Vector2f oldPos_, sf::Vector2f acc_, float radius_, float e_) : currentPos(currentPos_), oldPos(oldPos_), acc(acc_), radius(radius_), e(e_){
+    float mass;
+    int lifetime;
+    Point(sf::Vector2f pos_, sf::Vector2f acc_, float radius_, float e_, float mass_) : currentPos(pos_), oldPos(pos_), acc(acc_), radius(radius_), e(e_), lifetime(0), mass(mass_){
         shape.setRadius(radius);
         shape.setOrigin(sf::Vector2f(radius, radius));
     }
-    Point(sf::Vector2f pos_, sf::Vector2f acc_, float radius_, float e_) : currentPos(pos_), oldPos(pos_), acc(acc_), radius(radius_), e(e_){
-        shape.setRadius(radius);
-        shape.setOrigin(sf::Vector2f(radius, radius));
-    }
-    Point() {
-        radius=1;
-        e=1;
-        currentPos = sf::Vector2f(0,0);
-        oldPos = sf::Vector2f(0,0);
-        acc = sf::Vector2f(0,0);
-        shape.setRadius(radius);
-        shape.setOrigin(sf::Vector2f(radius, radius));
-    }
+
     void freeze() {
         oldPos = currentPos;
         acc = sf::Vector2f(0, 0);
@@ -98,35 +88,73 @@ public:
         applyLineConstraint();
         p0->applyScreenConstraint();
         p1->applyScreenConstraint();
-
-
-
-
-
     }
+    void checkPointCollision(Point* point) {
+        float detectRadius = 3;
+        float tolerance = 5;
+        // Posted by Grumdrig, modified by community. See post 'Timeline' for change history
+        // Retrieved 2025-12-14, License - CC BY-SA 4.0
+        float l2 = (p1->currentPos-p0->currentPos).lengthSquared();  // i.e. |w-v|^2 -  avoid a sqrt
+        float t = std::max(0.0f, std::min(1.0f, (point->currentPos - p0->currentPos).dot( p1->currentPos - p0->currentPos) / l2));
+        sf::Vector2f closestPoint = p0->currentPos + t * (p1->currentPos - p0->currentPos);
+        float distance = distance2f(point->currentPos, closestPoint);
+        if (distance < detectRadius) {
+            sf::Vector2f normal = (point->currentPos - closestPoint).normalized();
+            float depth = tolerance-distance;
+            point->oldPos = point->currentPos;
+            p0->oldPos = p0->currentPos;
+            p1->oldPos = p1->currentPos;
+            float pim = (1.0f/point->mass);
+            float p0im = (1.0f/p0->mass);
+            float p1im = (1.0f/p1->mass);
+            float sum = pim + p0im + p1im;
+            point->currentPos += normal * depth * (pim/sum);
+            p0->currentPos -= normal * depth * (p0im/sum);
+            p1->currentPos -= normal * depth * (p1im/sum);
+            sf::Vector2f vel = point->currentPos - point->oldPos;
+            float vn = vel.dot(normal);
+            if (vn < 0.0f)
+                vel -= normal * vn;
+            point->oldPos = point->currentPos - vel;
+        }
+    }
+
+
+
+
+
+
+
+
+
 };
 class Square {
 public:
+
     LineConstraint l1, l2, l3, l4, l5;
     Point* p1;
     Point* p2;
     Point* p3;
     Point* p4;
     sf::Vector2f centerPos;
+    sf::Vector2f initialAcceleration;
     float sideLength;
     float rotation;
     float stiffness;
-        Square(sf::Vector2f centerPos_, std::vector<LineConstraint>& lineList, std::vector<Point*>& objList, float sideLength_, float stiffness_, float rotation_) {
+    float mass;
+        Square(sf::Vector2f centerPos_, std::vector<LineConstraint>& lineList, std::vector<Point*>& objList, float sideLength_, float stiffness_, float rotation_, float mass_, sf::Vector2f initialAcceleration_ = sf::Vector2f(0, 98)) {
             stiffness = stiffness_;
             centerPos = centerPos_;
             sideLength = sideLength_;
             rotation = rotation_;
+            mass = mass_;
+            initialAcceleration = initialAcceleration_;
             sf::Vector2f sideVector{sideLength, sideLength};
             sf::Vector2f sideHalfVector{sideLength/2, sideLength/2};
-            p1 = new Point{(centerPos-sideHalfVector), (centerPos-sideHalfVector), sf::Vector2f(0,0), 1, 1};
-            p2 = new Point{sf::Vector2f(centerPos.x+sideHalfVector.x, centerPos.y-sideHalfVector.y), sf::Vector2f(centerPos.x+sideHalfVector.x, centerPos.y-sideHalfVector.y), sf::Vector2f(0,0), 1, 1};
-            p3 = new Point{sf::Vector2f(p2->currentPos.x, p2->currentPos.y + sideLength), sf::Vector2f(p2->currentPos.x, p2->currentPos.y + sideLength), sf::Vector2f(0, 0), 1, 1};
-            p4 = new Point{sf::Vector2f(p1->currentPos.x, p1->currentPos.y+sideLength), sf::Vector2f(p1->currentPos.x, p1->currentPos.y+sideLength), sf::Vector2f(0, 0), 1, 1};
+            p1 = new Point{(centerPos-sideHalfVector), initialAcceleration, 1, 1, mass};
+            p2 = new Point{sf::Vector2f(centerPos.x+sideHalfVector.x, centerPos.y-sideHalfVector.y), initialAcceleration, 1, 1, mass};
+            p3 = new Point{sf::Vector2f(p2->currentPos.x, p2->currentPos.y + sideLength), initialAcceleration, 1, 1, mass};
+            p4 = new Point{sf::Vector2f(p1->currentPos.x, p1->currentPos.y+sideLength), initialAcceleration, 1, 1, mass};
             p1->currentPos = rotateAroundPoint(p1->currentPos, centerPos, rotation);
             p1->oldPos = p1->currentPos;
             p2->currentPos = rotateAroundPoint(p2->currentPos, centerPos, rotation);

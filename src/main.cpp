@@ -18,6 +18,7 @@ int main() {
     // Point* p4 = new Point{sf::Vector2f(100, 200), sf::Vector2f(0, 98), 1, 1};
     //
     std::vector<Point*> pointList{};
+    std::vector<Point*> debugList{};
     std::vector<LineConstraint> lineList{};
     // float enforceAmount = 1;
     // lineList.push_back(LineConstraint{p1, p2, enforceAmount});
@@ -26,10 +27,17 @@ int main() {
     // lineList.push_back(LineConstraint{p4, p1, enforceAmount});
     // lineList.push_back(LineConstraint{p3, p1, enforceAmount});
 
-    Square s1{sf::Vector2f(400, 400), lineList, pointList, 150, 0, 0};
-    Point* p1 = new Point{sf::Vector2f(100, 200), sf::Vector2f(0, 98), 1, 1};
-    pointList.push_back(p1);
+    Square s1{sf::Vector2f(400, 400), lineList, pointList, 150, 1, 0, 1, sf::Vector2f(0, 98)};
+    Square s2{sf::Vector2f(100, 100), lineList, pointList, 150, 1, 45, 100, sf::Vector2f(0, 98)};
+    Square s3{sf::Vector2f(700, 100), lineList, pointList, 10, 1, 45, 10, sf::Vector2f(40, 98)};
 
+    //Square s2{sf::Vector2f(400, 200), lineList, pointList, 150, 1, 0, sf::Vector2f(100, 98)};
+    // Point* p1 = new Point{sf::Vector2f(100, 200), sf::Vector2f(40, 98), 1, 1, 1};
+    // Point* p2 = new Point{sf::Vector2f(100, 200), sf::Vector2f(40, 98), 1, 0, 1};
+    // Point* p3 = new Point{sf::Vector2f(100, 200), sf::Vector2f(40, 98), 1, 0.5, 1};
+    // pointList.push_back(p1);
+    // pointList.push_back(p2);
+    // pointList.push_back(p3);
     while (window.isOpen())
     {
         float frameTime = clock.restart().asSeconds();
@@ -58,7 +66,17 @@ int main() {
                     for (auto & line : lineList) {
                         line.applyLineConstraint();
                     }
+                    for (auto & line : lineList) {
+                        for (auto & point : pointList) {
+                            if (line.p0->currentPos != point->currentPos && line.p1->currentPos != point->currentPos) {
+                                line.checkPointCollision(point);
+                            }
+
+                        }
+                    }
                 }
+
+
                 accumulator -= dt;
             }
         }
@@ -69,6 +87,16 @@ int main() {
         }
         for (auto & line : lineList) {
             line.draw(window);
+        }
+        for (auto it = debugList.begin(); it != debugList.end(); it++) {
+            (*it)->draw(window);
+            if ((*it)->lifetime > 1) {
+                debugList.erase(it);
+                it--;
+            } else {
+                (*it)->lifetime++;
+            }
+
         }
         window.display();
 
