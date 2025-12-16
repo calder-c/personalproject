@@ -1,7 +1,9 @@
 #include "body.h"
 #include "include.h"
 int main() {
-    sf::RenderWindow window(sf::VideoMode({SCREEN_WIDTH, SCREEN_HEIGHT}), "Physics Simulation Personal Project");
+    sf::ContextSettings settings{};
+    settings.antiAliasingLevel = 8;
+    sf::RenderWindow window(sf::VideoMode({SCREEN_WIDTH, SCREEN_HEIGHT}), "Physics Simulation Personal Project", sf::Style::Default, sf::State::Windowed, settings);
     window.setFramerateLimit(0);
     window.setVerticalSyncEnabled(false);
     sf::Clock clock;
@@ -20,6 +22,7 @@ int main() {
     std::vector<Point*> pointList{};
     std::vector<Point*> debugList{};
     std::vector<LineConstraint> lineList{};
+    std::vector<VertexRenderer> vertexList{};
     // float enforceAmount = 1;
     // lineList.push_back(LineConstraint{p1, p2, enforceAmount});
     // lineList.push_back(LineConstraint{p2, p3, enforceAmount});
@@ -27,9 +30,9 @@ int main() {
     // lineList.push_back(LineConstraint{p4, p1, enforceAmount});
     // lineList.push_back(LineConstraint{p3, p1, enforceAmount});
 
-    Square s1{sf::Vector2f(400, 400), lineList, pointList, 150, 1, 0, 1, sf::Vector2f(0, 98)};
-    Square s2{sf::Vector2f(100, 100), lineList, pointList, 150, 1, 45, 100, sf::Vector2f(0, 98)};
-    Square s3{sf::Vector2f(700, 100), lineList, pointList, 10, 1, 45, 10, sf::Vector2f(40, 98)};
+    Square s1{sf::Vector2f(400, 400), lineList, pointList, vertexList, 150, 1, 0, 1, sf::Vector2f(20, 98)};
+    Square s2{sf::Vector2f(100, 100), lineList, pointList, vertexList, 150, 1, 45, 100, sf::Vector2f(0, 98)};
+    Square s3{sf::Vector2f(700, 100), lineList, pointList, vertexList, 10, 1, 45, 10, sf::Vector2f(40, 98)};
 
     //Square s2{sf::Vector2f(400, 200), lineList, pointList, 150, 1, 0, sf::Vector2f(100, 98)};
     // Point* p1 = new Point{sf::Vector2f(100, 200), sf::Vector2f(40, 98), 1, 1, 1};
@@ -87,6 +90,9 @@ int main() {
         }
         for (auto & line : lineList) {
             line.draw(window);
+        }
+        for (auto & vertex : vertexList) {
+            vertex.draw(window);
         }
         for (auto it = debugList.begin(); it != debugList.end(); it++) {
             (*it)->draw(window);

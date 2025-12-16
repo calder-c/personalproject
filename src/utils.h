@@ -22,3 +22,10 @@ sf::Vector2f rotateAroundPoint(sf::Vector2f pos, sf::Vector2f point, float degAn
     result_y += y_origin;
     return sf::Vector2f(result_x, result_y);
 }
+template <typename T>
+bool compPointAngle(std::pair<T, float> a, std::pair<T, float> b) {
+    if (a.second > b.second) {
+        return true;
+    }
+    return false;
+}

@@ -9,6 +9,7 @@ public:
     float radius;
     float e;
     float mass;
+    bool shouldDraw = false;
     int lifetime;
     Point(sf::Vector2f pos_, sf::Vector2f acc_, float radius_, float e_, float mass_) : currentPos(pos_), oldPos(pos_), acc(acc_), radius(radius_), e(e_), lifetime(0), mass(mass_){
         shape.setRadius(radius);
@@ -43,31 +44,63 @@ public:
 
     }
     void draw(sf::RenderWindow & window) {
-        shape.setPosition(currentPos);
-        window.draw(shape);
+        if (shouldDraw) {
+            shape.setPosition(currentPos);
+            window.draw(shape);
+        }
     }
 
+};
+struct VertexRenderer {
+    std::vector<Point*> pointList;
+    sf::Color fillColor;
+
+    void draw (sf::RenderWindow & window) {
+        sf::ConvexShape shape;
+        shape.setPointCount(pointList.size());
+        shape.setFillColor(fillColor);
+        int index = 0;
+        sf::Vector2f center(0,0);
+
+        for (auto & point : pointList) {
+            center+=point->currentPos;
+        }
+        center/=static_cast<float>(pointList.size());
+        std::vector<std::pair<Point, float>> pointAngles;
+        for (auto & point : pointList) {
+            float angle = std::atan2(point->currentPos.y - center.y, point->currentPos.x - center.x);
+        }
+        std::ranges::sort(pointAngles, compPointAngle<Point>);
+        index = 0;
+        for (auto & point : pointList) {
+            shape.setPoint(index, point->currentPos);
+            index++;
+        }
+        window.draw(shape);
+    }
 };
 class LineConstraint {
 public:
     Point * p0;
     Point * p1;
     float length, stiffness;
+    bool shouldDraw = false;
     LineConstraint(Point* p0_, Point* p1_, float stiffness_) : p0(p0_), p1(p1_), stiffness(stiffness_) {
         length = distance2f(p0->currentPos, p1->currentPos);
     }
     LineConstraint(Point* p0_, Point* p1_, float length_, float stiffness_) : p0(p0_), p1(p1_), length(length_), stiffness(stiffness_) {}
     LineConstraint(){}
     void draw(sf::RenderWindow & window) {
-        std::array<sf::Vertex, 2> line =
-        {
-            sf::Vertex{p0->currentPos, sf::Color::Blue,p0->currentPos },
-            sf::Vertex{p1->currentPos, sf::Color::Blue,p1->currentPos }
-        };
-        window.draw(p0->shape);
-        window.draw(p1->shape);
-        window.draw(line.data(), line.size(), sf::PrimitiveType::Lines);
-
+        if (shouldDraw) {
+            std::array<sf::Vertex, 2> line =
+            {
+                sf::Vertex{p0->currentPos, sf::Color::Blue,p0->currentPos },
+                sf::Vertex{p1->currentPos, sf::Color::Blue,p1->currentPos }
+            };
+            window.draw(p0->shape);
+            window.draw(p1->shape);
+            window.draw(line.data(), line.size(), sf::PrimitiveType::Lines);
+        }
     }
     void applyLineConstraint() {
         float dx = p1->currentPos.x - p0->currentPos.x;
@@ -142,7 +175,7 @@ public:
     float rotation;
     float stiffness;
     float mass;
-        Square(sf::Vector2f centerPos_, std::vector<LineConstraint>& lineList, std::vector<Point*>& objList, float sideLength_, float stiffness_, float rotation_, float mass_, sf::Vector2f initialAcceleration_ = sf::Vector2f(0, 98)) {
+        Square(sf::Vector2f centerPos_, std::vector<LineConstraint>& lineList, std::vector<Point*>& objList, std::vector<VertexRenderer>& vertexList, float sideLength_, float stiffness_, float rotation_, float mass_, sf::Vector2f initialAcceleration_ = sf::Vector2f(0, 98)) {
             stiffness = stiffness_;
             centerPos = centerPos_;
             sideLength = sideLength_;
@@ -177,6 +210,13 @@ public:
             lineList.push_back(l3);
             lineList.push_back(l4);
             lineList.push_back(l5);
+            VertexRenderer newVertex{};
+            newVertex.fillColor = orange1;
+            newVertex.pointList.push_back(p1);
+            newVertex.pointList.push_back(p2);
+            newVertex.pointList.push_back(p3);
+            newVertex.pointList.push_back(p4);
+            vertexList.push_back(newVertex);
 
 
 
