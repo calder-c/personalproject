@@ -8,6 +8,7 @@ add_executable(PhysicsSim src/main.cpp
         src/include.h
         src/definitions.h
         src/utils.h
+        src/ui.h
 )
 target_link_libraries(PhysicsSim PRIVATE
         SFML::Graphics

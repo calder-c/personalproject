@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cmath>
 #include <vector>
+#include <functional>
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
 #include <random>

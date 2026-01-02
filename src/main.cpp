@@ -1,5 +1,7 @@
 #include "body.h"
 #include "include.h"
+#include "ui.h"
+
 int main() {
     sf::ContextSettings settings{};
     settings.antiAliasingLevel = 8;
@@ -7,11 +9,12 @@ int main() {
     window.setFramerateLimit(0);
     window.setVerticalSyncEnabled(false);
     sf::Clock clock;
+    Point* lastClicked;
     //sf::Time dt = sf::milliseconds(16.6667);
     const float fps = 60;
     const float dt = 1.0/fps;
     const float subtick = 100;
-    bool simulating = false;
+    enum Mode mode = PAUSED;
     float accumulator = 0.0f;
 
     // Point* p1 = new Point{sf::Vector2f(100, 100), sf::Vector2f(110, 98), 1, 1};
@@ -21,15 +24,26 @@ int main() {
     //
     std::vector<Point*> pointList{};
     std::vector<Point*> debugList{};
+    std::vector<Button*> buttonList{};
     std::vector<LineConstraint> lineList{};
     std::vector<VertexRenderer> vertexList{};
+
     // float enforceAmount = 1;
     // lineList.push_back(LineConstraint{p1, p2, enforceAmount});
     // lineList.push_back(LineConstraint{p2, p3, enforceAmount});
     // lineList.push_back(LineConstraint{p3, p4, enforceAmount});
     // lineList.push_back(LineConstraint{p4, p1, enforceAmount});
     // lineList.push_back(LineConstraint{p3, p1, enforceAmount});
-
+    int spacing = SCREEN_HEIGHT-SIM_HEIGHT;
+    sf::Texture playTex(std::filesystem::path("../assets/play.png"));
+    sf::Texture drawTex(std::filesystem::path("../assets/draw.png"));
+    sf::Texture connectTex(std::filesystem::path("../assets/connect.png"));
+    Button playButton = Button(sf::Vector2f(0, SIM_HEIGHT), spacing, spacing, sf::Color::Green, playTex, "play");
+    Button drawButton = Button(sf::Vector2f(spacing, SIM_HEIGHT), spacing, spacing, sf::Color::White, drawTex, "draw");
+    Button connectButton = Button(sf::Vector2f(spacing*2, SIM_HEIGHT), spacing, spacing, sf::Color::White, connectTex, "connect");
+    buttonList.push_back(&playButton);
+    buttonList.push_back(&drawButton);
+    buttonList.push_back(&connectButton);
     Square s1{sf::Vector2f(400, 400), lineList, pointList, vertexList, 150, 1, 0, 1, sf::Vector2f(20, 98)};
     Square s2{sf::Vector2f(100, 100), lineList, pointList, vertexList, 150, 1, 45, 100, sf::Vector2f(0, 98)};
     Square s3{sf::Vector2f(700, 100), lineList, pointList, vertexList, 10, 1, 45, 10, sf::Vector2f(40, 98)};
@@ -44,7 +58,22 @@ int main() {
     while (window.isOpen())
     {
         float frameTime = clock.restart().asSeconds();
+        sf::Vector2i mousePosition = sf::Mouse::getPosition(window);
+        if (mode != SIMULATING) {
+            for (auto & point : pointList) {
+                float dist = distance2f(sf::Vector2f(mousePosition), point->currentPos);
+                if (dist <= 10) {
+                    point->shouldDraw = true;
+                    if (point->radius < 10) {
+                        point->radius += 0.20;
+                    }
 
+                } else {
+                    point->radius = 1;
+                }
+            }
+
+        }
         while (const std::optional event = window.pollEvent())
         {
             //checks for close event
@@ -53,11 +82,56 @@ int main() {
             } else if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
             {
                 if (keyPressed->scancode == sf::Keyboard::Scancode::Space) {
-                    simulating = !simulating;
+                    if (mode == SIMULATING) {
+                        mode = PAUSED;
+                    } else {
+                        for (auto & point : pointList) {
+                            point->shouldDraw = false;
+                            point->radius = 1;
+                        }
+                        mode = SIMULATING;
+                    }
+                }
+            } else if (const auto* mouseClicked = event->getIf<sf::Event::MouseButtonReleased>())
+            {
+                if (mouseClicked->position.y > SIM_HEIGHT) {
+                    for (auto & button : buttonList) {
+                        if ((mouseClicked->position.x >= button->position.x && mouseClicked->position.x <= button->position.x + button->width) && (mouseClicked->position.y >= button->position.y && mouseClicked->position.y <= button->position.y + button->height)) {
+                            if (button->name == "play") {
+                                if (mode == SIMULATING) {
+                                    mode = PAUSED;
+                                } else {
+                                    for (auto & point : pointList) {
+                                        point->shouldDraw = false;
+                                        point->radius = 1;
+                                    }
+                                    mode = SIMULATING;
+                                }
+                            } else if (button->name == "draw") {
+                                mode = DRAW;
+                            } else if (button->name == "connect") {
+                                mode = CONNECTION;
+                            }
+                        }
+                    }
+                } else {
+                    if (mode == DRAW) {
+                        Point* p = new Point{sf::Vector2f(mouseClicked->position.x, mouseClicked->position.y), sf::Vector2f(0, 98), 1, 1, 1};
+                        p->shouldDraw = true;
+                        pointList.push_back(p);
+                    } else if (mode == CONNECTION) {
+                        for (auto & point : pointList) {
+                            float dist = distance2f(sf::Vector2f(mousePosition), point->currentPos);
+                            if (dist < point->radius) {
+                                lineList.push_back(LineConstraint{point, lastClicked, 1});
+                                lastClicked = point;
+                            }
+                        }
+                    }
                 }
             }
         }
-        if (simulating) {
+        if (mode == SIMULATING) {
             accumulator += frameTime;
             while (accumulator >= dt) {
                 for (auto & obj : pointList) {
@@ -85,14 +159,17 @@ int main() {
         }
 
         window.clear();
-        for (auto & obj : pointList) {
-            obj->draw(window);
-        }
         for (auto & line : lineList) {
             line.draw(window);
         }
         for (auto & vertex : vertexList) {
             vertex.draw(window);
+        }
+        for (auto & obj : pointList) {
+            obj->draw(window);
+        }
+        for (auto & button : buttonList) {
+            button->draw(window);
         }
         for (auto it = debugList.begin(); it != debugList.end(); it++) {
             (*it)->draw(window);

@@ -12,8 +12,17 @@ sf::Color orange2(141, 56, 22);
 sf::Color debugRed(240, 0, 0);
 sf::Color debugGreen(0, 240, 0);
 
+const int SIM_WIDTH = 960;
+const int SIM_HEIGHT = 540;
 const int SCREEN_WIDTH = 960;
-const int SCREEN_HEIGHT = 540;
+const int SCREEN_HEIGHT = 600;
 
+enum Mode {
+    PAUSED,
+    SIMULATING,
+    DRAW,
+    CONNECTION,
+    SQUARE
+};
 
 //some helpful definitions

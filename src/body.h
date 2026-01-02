@@ -12,8 +12,6 @@ public:
     bool shouldDraw = false;
     int lifetime;
     Point(sf::Vector2f pos_, sf::Vector2f acc_, float radius_, float e_, float mass_) : currentPos(pos_), oldPos(pos_), acc(acc_), radius(radius_), e(e_), lifetime(0), mass(mass_){
-        shape.setRadius(radius);
-        shape.setOrigin(sf::Vector2f(radius, radius));
     }
 
     void freeze() {
@@ -31,20 +29,22 @@ public:
         if (currentPos.x < 0) {
             currentPos.x = 0;
             oldPos.x = (currentPos + diffPos*e).x;
-        } else if (currentPos.x > SCREEN_WIDTH) {
-            currentPos.x = SCREEN_WIDTH;
+        } else if (currentPos.x > SIM_WIDTH) {
+            currentPos.x = SIM_WIDTH;
             oldPos.x = (currentPos + diffPos*e).x;
         }else if (currentPos.y < 0) {
             currentPos.y = 0;
             oldPos.y = (currentPos + diffPos*e).y;
-        } else if (currentPos.y > SCREEN_HEIGHT) {
-            currentPos.y = SCREEN_HEIGHT;
+        } else if (currentPos.y > SIM_HEIGHT) {
+            currentPos.y = SIM_HEIGHT;
             oldPos.y = (currentPos + diffPos*e).y;
         }
 
     }
     void draw(sf::RenderWindow & window) {
         if (shouldDraw) {
+            shape.setRadius(radius);
+            shape.setOrigin(sf::Vector2f(radius, radius));
             shape.setPosition(currentPos);
             window.draw(shape);
         }
