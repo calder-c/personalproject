@@ -44,18 +44,15 @@ int main() {
     buttonList.push_back(&playButton);
     buttonList.push_back(&drawButton);
     buttonList.push_back(&connectButton);
-    Square s1{sf::Vector2f(400, 400), lineList, pointList, vertexList, 150, 1, 0, 10, sf::Vector2f(10, 98)};
-    Square s2{sf::Vector2f(100, 100), lineList, pointList, vertexList, 150, 1, 35, 10, sf::Vector2f(0, 98)};
+    // Square s1{sf::Vector2f(400, 400), lineList, pointList, vertexList, 150, 1, 0, 10, sf::Vector2f(10, 98)};
+    // Square s2{sf::Vector2f(100, 100), lineList, pointList, vertexList, 150, 1, 35, 10, sf::Vector2f(0, 98)};
+    // Square s3{sf::Vector2f(700, 100), lineList, pointList, vertexList, 30, 1, 25, 10, sf::Vector2f(40, 98)};
+    // Square s4{sf::Vector2f(40, 400), lineList, pointList, vertexList, 40, 1, 15, 10, sf::Vector2f(40, 98)};
+    //
+    Square s1{sf::Vector2f(100, 100), lineList, pointList, vertexList, 150, 1, 0, 10, sf::Vector2f(10, 98)};
+    Square s2{sf::Vector2f(150, 300), lineList, pointList, vertexList, 150, 1, 35, 10, sf::Vector2f(0, 98)};
     Square s3{sf::Vector2f(700, 100), lineList, pointList, vertexList, 30, 1, 25, 10, sf::Vector2f(40, 98)};
     Square s4{sf::Vector2f(40, 400), lineList, pointList, vertexList, 40, 1, 15, 10, sf::Vector2f(40, 98)};
-
-    //Square s2{sf::Vector2f(400, 200), lineList, pointList, 150, 1, 0, sf::Vector2f(100, 98)};
-    // Point* p1 = new Point{sf::Vector2f(100, 200), sf::Vector2f(40, 98), 1, 1, 1};
-    // Point* p2 = new Point{sf::Vector2f(100, 200), sf::Vector2f(40, 98), 1, 0, 1};
-    // Point* p3 = new Point{sf::Vector2f(100, 200), sf::Vector2f(40, 98), 1, 0.5, 1};
-    // pointList.push_back(p1);
-    // pointList.push_back(p2);
-    // pointList.push_back(p3);
     while (window.isOpen())
     {
         float frameTime = clock.restart().asSeconds();

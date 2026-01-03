@@ -67,15 +67,14 @@ struct VertexRenderer {
         }
         center/=static_cast<float>(pointList.size());
         std::vector<std::pair<Point, float>> pointAngles;
-        for (auto & point : pointList) {
-            float angle = std::atan2(point->currentPos.y - center.y, point->currentPos.x - center.x);
-        }
         std::ranges::sort(pointAngles, compPointAngle<Point>);
         index = 0;
         for (auto & point : pointList) {
             shape.setPoint(index, point->currentPos);
             index++;
         }
+        shape.setOutlineThickness(3);
+        shape.setOutlineColor(gray);
         window.draw(shape);
     }
 };
@@ -121,8 +120,8 @@ public:
         p1->applyScreenConstraint();
     }
     void checkPointCollision(Point* point) {
-        float detectRadius = 2;
-        float tolerance = 3;
+        float detectRadius = 3;
+        float tolerance = 7;
 
         // Posted by Grumdrig, modified by community. See post 'Timeline' for change history
         // Retrieved 2025-12-14, License - CC BY-SA 4.0
