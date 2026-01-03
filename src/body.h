@@ -97,8 +97,6 @@ public:
                 sf::Vertex{p0->currentPos, sf::Color::Blue,p0->currentPos },
                 sf::Vertex{p1->currentPos, sf::Color::Blue,p1->currentPos }
             };
-            window.draw(p0->shape);
-            window.draw(p1->shape);
             window.draw(line.data(), line.size(), sf::PrimitiveType::Lines);
         }
     }
@@ -150,6 +148,7 @@ public:
                 vel -= normal * vn;
             point->oldPos = point->currentPos - vel;
         }
+
     }
 
 

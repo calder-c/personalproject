@@ -9,7 +9,7 @@ int main() {
     window.setFramerateLimit(0);
     window.setVerticalSyncEnabled(false);
     sf::Clock clock;
-    Point* lastClicked = new Point(sf::Vector2f(0, 0), sf::Vector2f(0, 0), -1, 0, 0);
+    Point* lastClicked = nullptr;
     //sf::Time dt = sf::milliseconds(16.6667);
     const float fps = 60;
     const float dt = 1.0/fps;
@@ -61,18 +61,24 @@ int main() {
         sf::Vector2i mousePosition = sf::Mouse::getPosition(window);
         if (mode != SIMULATING) {
             for (auto & point : pointList) {
+                point->shouldDraw = true;
                 float dist = distance2f(sf::Vector2f(mousePosition), point->currentPos);
                 if (dist <= 10) {
-                    point->shouldDraw = true;
+
                     if (point->radius < 10) {
                         point->radius += 0.20;
                     }
 
                 } else {
                     point->radius = 1;
+
                 }
             }
 
+        } else {
+            for (auto & point : pointList) {
+                point->shouldDraw = false;
+            }
         }
         while (const std::optional event = window.pollEvent())
         {
@@ -85,16 +91,16 @@ int main() {
                     if (mode == SIMULATING) {
                         clickedButton = "";
                         mode = PAUSED;
-                        for (auto & point : pointList) {
-                            point->shouldDraw = true;
-                        }
                     } else {
                         clickedButton = "play";
-                        for (auto & point : pointList) {
-                            point->shouldDraw = false;
-                            point->radius = 1;
-                        }
                         mode = SIMULATING;
+                    }
+                    for (auto & button : buttonList) {
+                        if (clickedButton == button->name) {
+                            button->backgroundColor = gray;
+                        } else {
+                            button->backgroundColor = sf::Color::White;
+                        }
                     }
                 }
             } else if (const auto* mouseClicked = event->getIf<sf::Event::MouseButtonReleased>())
@@ -106,18 +112,10 @@ int main() {
                                 if (mode == SIMULATING) {
                                     clickedButton = "";
                                     mode = PAUSED;
-                                    for (auto & point : pointList) {
-                                        point->shouldDraw = true;
-                                    }
                                 } else {
                                     clickedButton = "play";
-                                    for (auto & point : pointList) {
-                                        point->shouldDraw = false;
-                                        point->radius = 1;
-                                    }
                                     mode = SIMULATING;
                                 }
-
                             } else if (button->name == "draw") {
                                 mode = DRAW;
                                 clickedButton = button->name;
@@ -128,12 +126,13 @@ int main() {
                         }
                     }
                     for (auto & button : buttonList) {
-                        if (clickedButton != button->name) {
-                            button->backgroundColor = sf::Color::White;
-                        } else {
+                        if (clickedButton == button->name) {
                             button->backgroundColor = gray;
+                        } else {
+                            button->backgroundColor = sf::Color::White;
                         }
                     }
+
                 } else {
                     if (mode == DRAW) {
                         Point* p = new Point{sf::Vector2f(mouseClicked->position.x, mouseClicked->position.y), sf::Vector2f(0, 98), 1, 1, 1};
@@ -143,11 +142,11 @@ int main() {
                         for (auto & point : pointList) {
                             float dist = distance2f(sf::Vector2f(mousePosition), point->currentPos);
                             if (dist < point->radius) {
-                                if (lastClicked->radius != -1) {
+                                if (lastClicked) {
                                     auto line = LineConstraint{point, lastClicked, 1};
                                     line.shouldDraw = true;
                                     lineList.push_back(line);
-                                    lastClicked = point;
+                                    lastClicked = nullptr;
                                 } else {
                                     lastClicked = point;
                                 }
