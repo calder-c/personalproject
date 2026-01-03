@@ -121,8 +121,9 @@ public:
         p1->applyScreenConstraint();
     }
     void checkPointCollision(Point* point) {
-        float detectRadius = 3;
-        float tolerance = 5;
+        float detectRadius = 2;
+        float tolerance = 3;
+
         // Posted by Grumdrig, modified by community. See post 'Timeline' for change history
         // Retrieved 2025-12-14, License - CC BY-SA 4.0
         float l2 = (p1->currentPos-p0->currentPos).lengthSquared();  // i.e. |w-v|^2 -  avoid a sqrt
@@ -132,9 +133,7 @@ public:
         if (distance < detectRadius) {
             sf::Vector2f normal = (point->currentPos - closestPoint).normalized();
             float depth = tolerance-distance;
-            point->oldPos = point->currentPos;
-            p0->oldPos = p0->currentPos;
-            p1->oldPos = p1->currentPos;
+
             float pim = (1.0f/point->mass);
             float p0im = (1.0f/p0->mass);
             float p1im = (1.0f/p1->mass);
@@ -146,6 +145,9 @@ public:
             float vn = vel.dot(normal);
             if (vn < 0.0f)
                 vel -= normal * vn;
+            point->oldPos = point->currentPos;
+            p0->oldPos = p0->currentPos;
+            p1->oldPos = p1->currentPos;
             point->oldPos = point->currentPos - vel;
         }
 

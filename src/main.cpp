@@ -38,15 +38,16 @@ int main() {
     sf::Texture playTex(std::filesystem::path("../assets/play.png"));
     sf::Texture drawTex(std::filesystem::path("../assets/draw.png"));
     sf::Texture connectTex(std::filesystem::path("../assets/connect.png"));
-    Button playButton = Button(sf::Vector2f(0, SIM_HEIGHT), spacing, spacing, sf::Color::Green, playTex, "play");
+    Button playButton = Button(sf::Vector2f(0, SIM_HEIGHT), spacing, spacing, sf::Color::White, playTex, "play");
     Button drawButton = Button(sf::Vector2f(spacing, SIM_HEIGHT), spacing, spacing, sf::Color::White, drawTex, "draw");
     Button connectButton = Button(sf::Vector2f(spacing*2, SIM_HEIGHT), spacing, spacing, sf::Color::White, connectTex, "connect");
     buttonList.push_back(&playButton);
     buttonList.push_back(&drawButton);
     buttonList.push_back(&connectButton);
-    Square s1{sf::Vector2f(400, 400), lineList, pointList, vertexList, 150, 1, 0, 1, sf::Vector2f(20, 98)};
-    Square s2{sf::Vector2f(100, 100), lineList, pointList, vertexList, 150, 1, 45, 100, sf::Vector2f(0, 98)};
-    Square s3{sf::Vector2f(700, 100), lineList, pointList, vertexList, 10, 1, 45, 10, sf::Vector2f(40, 98)};
+    Square s1{sf::Vector2f(400, 400), lineList, pointList, vertexList, 150, 1, 0, 10, sf::Vector2f(10, 98)};
+    Square s2{sf::Vector2f(100, 100), lineList, pointList, vertexList, 150, 1, 35, 10, sf::Vector2f(0, 98)};
+    Square s3{sf::Vector2f(700, 100), lineList, pointList, vertexList, 30, 1, 25, 10, sf::Vector2f(40, 98)};
+    Square s4{sf::Vector2f(40, 400), lineList, pointList, vertexList, 40, 1, 15, 10, sf::Vector2f(40, 98)};
 
     //Square s2{sf::Vector2f(400, 200), lineList, pointList, 150, 1, 0, sf::Vector2f(100, 98)};
     // Point* p1 = new Point{sf::Vector2f(100, 200), sf::Vector2f(40, 98), 1, 1, 1};
@@ -157,31 +158,52 @@ int main() {
             }
         }
         if (mode == SIMULATING) {
-            accumulator += frameTime;
-            while (accumulator >= dt) {
-                for (auto & obj : pointList) {
-                    obj->applyScreenConstraint();
-                    obj->update(dt);
+    accumulator += frameTime;
+    while (accumulator >= dt) {
 
-                }
-                for (int i=0; i<subtick; i++) {
-                    for (auto & line : lineList) {
-                        line.applyLineConstraint();
-                    }
-                    for (auto & line : lineList) {
-                        for (auto & point : pointList) {
-                            if (line.p0->currentPos != point->currentPos && line.p1->currentPos != point->currentPos) {
-                                line.checkPointCollision(point);
-                            }
+        for (auto & obj : pointList) {
+            obj->applyScreenConstraint();
+            obj->update(dt);
+        }
 
+        for (int i = 0; i < subtick; i++) {
+
+            for (auto & line : lineList) {
+                line.applyLineConstraint();
+            }
+
+            for (auto & line : lineList) {
+                for (auto & point : pointList) {
+                    if (line.p0->currentPos != point->currentPos && line.p1->currentPos != point->currentPos) {
+
+                        sf::Vector2f motion = point->currentPos - point->oldPos;
+                        float motionLength = std::sqrt(motion.x*motion.x + motion.y*motion.y);
+
+                        int steps = std::max(1, int(std::ceil(motionLength)));
+                        sf::Vector2f stepMotion = motion / float(steps);
+
+                        sf::Vector2f interpPos = point->oldPos;
+                        for (int s = 0; s < steps; ++s) {
+                            interpPos += stepMotion;
+                            sf::Vector2f originalPos = point->currentPos;
+                            point->currentPos = interpPos;
+
+                            // Collision check at this mini-step
+                            line.checkPointCollision(point);
+
+                            // Restore for next mini-step
+                            point->currentPos = point->currentPos;
                         }
+
                     }
                 }
-
-
-                accumulator -= dt;
             }
         }
+
+        accumulator -= dt;
+    }
+}
+
 
         window.clear();
         for (auto & line : lineList) {
