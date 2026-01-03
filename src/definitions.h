@@ -9,6 +9,7 @@ constexpr float earth_g = 9.81;
 //orange color
 sf::Color orange1(242, 101, 34);
 sf::Color orange2(141, 56, 22);
+sf::Color gray(145, 145, 145);
 sf::Color debugRed(240, 0, 0);
 sf::Color debugGreen(0, 240, 0);
 

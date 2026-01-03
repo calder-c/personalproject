@@ -13,7 +13,6 @@ public:
         backgroundColor_), sprite(sf::Sprite{image_}), width(width_), height(height_), position(position_), name(name_){
 
         shape.setPosition(position_);
-        shape.setFillColor(backgroundColor);
         shape.setSize(sf::Vector2f(width, height));
         sprite.setPosition(position_);
         auto size = image_.getSize();
@@ -22,6 +21,7 @@ public:
     }
     void draw(sf::RenderWindow & window) {
         if (shouldDraw) {
+            shape.setFillColor(backgroundColor);
             window.draw(shape);
             window.draw(sprite);
         }

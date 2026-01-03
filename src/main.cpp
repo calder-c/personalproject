@@ -9,14 +9,14 @@ int main() {
     window.setFramerateLimit(0);
     window.setVerticalSyncEnabled(false);
     sf::Clock clock;
-    Point* lastClicked;
+    Point* lastClicked = new Point(sf::Vector2f(0, 0), sf::Vector2f(0, 0), -1, 0, 0);
     //sf::Time dt = sf::milliseconds(16.6667);
     const float fps = 60;
     const float dt = 1.0/fps;
     const float subtick = 100;
     enum Mode mode = PAUSED;
     float accumulator = 0.0f;
-
+    std::string clickedButton;
     // Point* p1 = new Point{sf::Vector2f(100, 100), sf::Vector2f(110, 98), 1, 1};
     // Point* p2 = new Point{sf::Vector2f(200, 100), sf::Vector2f(0, 98), 1, 1};
     // Point* p3 = new Point{sf::Vector2f(200, 200), sf::Vector2f(0, 98), 1, 1};
@@ -83,8 +83,13 @@ int main() {
             {
                 if (keyPressed->scancode == sf::Keyboard::Scancode::Space) {
                     if (mode == SIMULATING) {
+                        clickedButton = "";
                         mode = PAUSED;
+                        for (auto & point : pointList) {
+                            point->shouldDraw = true;
+                        }
                     } else {
+                        clickedButton = "play";
                         for (auto & point : pointList) {
                             point->shouldDraw = false;
                             point->radius = 1;
@@ -99,19 +104,34 @@ int main() {
                         if ((mouseClicked->position.x >= button->position.x && mouseClicked->position.x <= button->position.x + button->width) && (mouseClicked->position.y >= button->position.y && mouseClicked->position.y <= button->position.y + button->height)) {
                             if (button->name == "play") {
                                 if (mode == SIMULATING) {
+                                    clickedButton = "";
                                     mode = PAUSED;
+                                    for (auto & point : pointList) {
+                                        point->shouldDraw = true;
+                                    }
                                 } else {
+                                    clickedButton = "play";
                                     for (auto & point : pointList) {
                                         point->shouldDraw = false;
                                         point->radius = 1;
                                     }
                                     mode = SIMULATING;
                                 }
+
                             } else if (button->name == "draw") {
                                 mode = DRAW;
+                                clickedButton = button->name;
                             } else if (button->name == "connect") {
                                 mode = CONNECTION;
+                                clickedButton = button->name;
                             }
+                        }
+                    }
+                    for (auto & button : buttonList) {
+                        if (clickedButton != button->name) {
+                            button->backgroundColor = sf::Color::White;
+                        } else {
+                            button->backgroundColor = gray;
                         }
                     }
                 } else {
@@ -123,8 +143,14 @@ int main() {
                         for (auto & point : pointList) {
                             float dist = distance2f(sf::Vector2f(mousePosition), point->currentPos);
                             if (dist < point->radius) {
-                                lineList.push_back(LineConstraint{point, lastClicked, 1});
-                                lastClicked = point;
+                                if (lastClicked->radius != -1) {
+                                    auto line = LineConstraint{point, lastClicked, 1};
+                                    line.shouldDraw = true;
+                                    lineList.push_back(line);
+                                    lastClicked = point;
+                                } else {
+                                    lastClicked = point;
+                                }
                             }
                         }
                     }
