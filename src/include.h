@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cmath>
 #include <vector>
+#include "tfd/tinyfiledialogs.h"
 #include <functional>
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>

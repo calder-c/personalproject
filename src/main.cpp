@@ -167,9 +167,14 @@ int main() {
                         if (lastClickPos.x != -1) {
 
                             float sideLength;
+                            float angle;
+                            float kg;
+                            float iniAccelX;
+                            float iniAccelY;
+
                             sf::Vector2f centerPos;
-                            std::cout << lastClickPos.x << "LastClickPos \n";
-                            std::cout << mousePosition.x << "MousePos \n";
+                            // std::cout << lastClickPos.x << "LastClickPos \n";
+                            // std::cout << mousePosition.x << "MousePos \n";
                             if (lastClickPos.x < mousePosition.x) {
                                 sideLength = (mousePosition.x - lastClickPos.x);
                                 centerPos = mousePosition-(mousePosition - lastClickPos)*0.5f;
@@ -180,10 +185,11 @@ int main() {
                             } else {
 
                             }
-
-                                //distance2f(lastClickPos, mousePosition) * 1/sqrt(2);
-                            std::cout << sideLength << "\n";
-                            Square* newSquare = new Square(centerPos, lineList, pointList, vertexList, sideLength, 1, 0, 1);
+                            angle = getUserInput<float>("Enter Angle (degrees): ", "0");
+                            kg = getUserInput<float>("Enter Mass (kg): ", "1");
+                            iniAccelX = getUserInput<float>("Enter Initial Acceleration X: ", "0");
+                            iniAccelY = getUserInput<float>("Enter Initial Acceleration Y: ", "98");
+                            Square* newSquare = new Square(centerPos, lineList, pointList, vertexList, sideLength, 1, angle, kg, sf::Vector2f(iniAccelX, iniAccelY));
                             lastClickPos.x = -1;
                         } else {
                             lastClickPos = mousePosition;

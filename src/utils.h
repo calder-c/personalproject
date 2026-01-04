@@ -29,3 +29,15 @@ bool compPointAngle(std::pair<T, float> a, std::pair<T, float> b) {
     }
     return false;
 }
+template <typename T>
+T getUserInput(std::string message, std::string defaultInput) {
+    const char* result = tinyfd_inputBox(
+    "Input Required",          // dialog title
+    message.c_str(),  // message
+    defaultInput.c_str()
+    );
+    std::stringstream ss(result);
+    T value;
+    ss >> value;
+    return value;
+}
