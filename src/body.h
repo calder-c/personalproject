@@ -18,9 +18,9 @@ public:
         oldPos = currentPos;
         acc = sf::Vector2f(0, 0);
     }
-    void update(float dt) {
+    void update(float dt, float drag) {
         sf::Vector2f buf = currentPos;
-        sf::Vector2f diffPos = (currentPos - oldPos);
+        sf::Vector2f diffPos = (currentPos - oldPos) * (1-drag);
         currentPos = currentPos + diffPos + acc*(dt*dt);
         oldPos = buf;
     }
@@ -112,9 +112,9 @@ public:
         p1->currentPos.x += offset_x;
         p1->currentPos.y += offset_y;
     }
-    void update(float dt) {
-        p0->update(dt);
-        p1->update(dt);
+    void update(float dt, float drag) {
+        p0->update(dt, drag);
+        p1->update(dt, drag);
         applyLineConstraint();
         p0->applyScreenConstraint();
         p1->applyScreenConstraint();
@@ -217,22 +217,6 @@ public:
             newVertex.pointList.push_back(p3);
             newVertex.pointList.push_back(p4);
             vertexList.push_back(newVertex);
-
-
-
-        // p1.currentPos = centerPos - sideHalfVector;
-        // p1.oldPos = p1.currentPos;
-
-        // p2.currentPos = p1.currentPos + sideVector;
-        // p2.oldPos = p2.currentPos;
-
-        // p3.currentPos.y = p2.currentPos.y + sideLength;
-        // p3.currentPos.x = p2.currentPos.x;
-        // p3.oldPos = p3.currentPos;
-
-        // p4.currentPos.y = p1.currentPos.y + sideLength;
-        // p4.oldPos = p4.currentPos;
-
 
     }
 };

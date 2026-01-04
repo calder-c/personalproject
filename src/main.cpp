@@ -17,56 +17,38 @@ int main() {
     bgSprite.setSize(sf::Vector2f(SCREEN_WIDTH, SCREEN_HEIGHT));
     Point* lastPointClicked = nullptr;
     sf::Vector2f lastClickPos = sf::Vector2f(-1, -1);
-    //sf::Time dt = sf::milliseconds(16.6667);
     const float fps = 60;
     const float dt = 1.0/fps;
     const float subtick = 100;
+    float drag=0;
     enum Mode mode = PAUSED;
     float accumulator = 0.0f;
     std::string clickedButton;
-    // Point* p1 = new Point{sf::Vector2f(100, 100), sf::Vector2f(110, 98), 1, 1};
-    // Point* p2 = new Point{sf::Vector2f(200, 100), sf::Vector2f(0, 98), 1, 1};
-    // Point* p3 = new Point{sf::Vector2f(200, 200), sf::Vector2f(0, 98), 1, 1};
-    // Point* p4 = new Point{sf::Vector2f(100, 200), sf::Vector2f(0, 98), 1, 1};
-    //
     std::vector<Point*> pointList{};
     std::vector<Point*> pointClickedList{};
     std::vector<Point*> debugList{};
     std::vector<Button*> buttonList{};
     std::vector<LineConstraint> lineList{};
     std::vector<VertexRenderer> vertexList{};
-
-    // float enforceAmount = 1;
-    // lineList.push_back(LineConstraint{p1, p2, enforceAmount});
-    // lineList.push_back(LineConstraint{p2, p3, enforceAmount});
-    // lineList.push_back(LineConstraint{p3, p4, enforceAmount});
-    // lineList.push_back(LineConstraint{p4, p1, enforceAmount});
-    // lineList.push_back(LineConstraint{p3, p1, enforceAmount});
     int spacing = SCREEN_HEIGHT-SIM_HEIGHT;
     sf::Texture playTex(std::filesystem::path("../assets/play.png"));
     sf::Texture drawTex(std::filesystem::path("../assets/draw.png"));
     sf::Texture connectTex(std::filesystem::path("../assets/connect.png"));
     sf::Texture squareTex(std::filesystem::path("../assets/square.png"));
     sf::Texture vertexTex(std::filesystem::path("../assets/vertex.png"));
+    sf::Texture dragTex(std::filesystem::path("../assets/drag.png"));
     Button playButton = Button(sf::Vector2f(0, SIM_HEIGHT), spacing, spacing, sf::Color::White, playTex, "play");
     Button drawButton = Button(sf::Vector2f(spacing, SIM_HEIGHT), spacing, spacing, sf::Color::White, drawTex, "draw");
     Button connectButton = Button(sf::Vector2f(spacing*2, SIM_HEIGHT), spacing, spacing, sf::Color::White, connectTex, "connect");
     Button squareButton = Button(sf::Vector2f(spacing*3, SIM_HEIGHT), spacing, spacing, sf::Color::White, squareTex, "square");
     Button vertexButton = Button(sf::Vector2f(spacing*4, SIM_HEIGHT), spacing, spacing, sf::Color::White, vertexTex, "vertex");
+    Button dragButton = Button(sf::Vector2f(spacing*5, SIM_HEIGHT), spacing, spacing, sf::Color::White, dragTex, "drag");
     buttonList.push_back(&playButton);
     buttonList.push_back(&drawButton);
     buttonList.push_back(&connectButton);
     buttonList.push_back(&squareButton);
     buttonList.push_back(&vertexButton);
-    // Square s1{sf::Vector2f(400, 400), lineList, pointList, vertexList, 150, 1, 0, 10, sf::Vector2f(10, 98)};
-    // Square s2{sf::Vector2f(100, 100), lineList, pointList, vertexList, 150, 1, 35, 10, sf::Vector2f(0, 98)};
-    // Square s3{sf::Vector2f(700, 100), lineList, pointList, vertexList, 30, 1, 25, 10, sf::Vector2f(40, 98)};
-    // Square s4{sf::Vector2f(40, 400), lineList, pointList, vertexList, 40, 1, 15, 10, sf::Vector2f(40, 98)};
-    //
-    // Square s1{sf::Vector2f(100, 100), lineList, pointList, vertexList, 150, 1, 0, 10, sf::Vector2f(100, 98)};
-    // Square s2{sf::Vector2f(150, 300), lineList, pointList, vertexList, 150, 1, 35, 10, sf::Vector2f(0, 98)};
-    // Square s3{sf::Vector2f(700, 100), lineList, pointList, vertexList, 30, 1, 25, 2, sf::Vector2f(40, 98)};
-    // Square s4{sf::Vector2f(40, 400), lineList, pointList, vertexList, 40, 1, 15, 3, sf::Vector2f(40, 98)};
+    buttonList.push_back(&dragButton);
     while (window.isOpen()) {
         float frameTime = clock.restart().asSeconds();
         sf::Vector2f mousePosition = sf::Vector2f(sf::Mouse::getPosition(window).x, sf::Mouse::getPosition(window).y);
@@ -161,6 +143,8 @@ int main() {
                             } else if (button->name == "vertex") {
                                 mode = VERTEX;
                                 clickedButton = button->name;
+                            } else if (button->name == "drag") {
+                                drag = getUserInput<float>("Enter Drag (0-1): ", "0");
                             }
                         }
                     }
@@ -254,7 +238,7 @@ int main() {
 
                     for (auto & obj : pointList) {
                         obj->applyScreenConstraint();
-                        obj->update(dt);
+                        obj->update(dt, drag);
                     }
 
                     for (int i = 0; i < subtick; i++) {
@@ -272,7 +256,6 @@ int main() {
                                     float motionLength = std::sqrt(motion.x*motion.x + motion.y*motion.y);
 
                                     int steps = std::max(1, int(std::ceil(motionLength)));
-
                                     sf::Vector2f stepMotion = motion / float(steps);
 
                                     sf::Vector2f interpPos = point->oldPos;
@@ -284,7 +267,6 @@ int main() {
                                     }
 #else
 
-                                    line.checkPointCollision(point);
 
 
 #endif
