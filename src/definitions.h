@@ -23,7 +23,8 @@ enum Mode {
     SIMULATING,
     DRAW,
     CONNECTION,
-    SQUARE
+    SQUARE,
+    VERTEX
 };
 
 //some helpful definitions
