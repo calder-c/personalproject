@@ -1,7 +1,7 @@
 #include "body.h"
 #include "include.h"
 #include "ui.h"
-
+#define PRECISE true
 int main() {
     sf::ContextSettings settings{};
     settings.antiAliasingLevel = 8;
@@ -9,11 +9,18 @@ int main() {
     window.setFramerateLimit(0);
     window.setVerticalSyncEnabled(false);
     sf::Clock clock;
-    Point* lastClicked = nullptr;
+    sf::Texture bgTexture(std::filesystem::path("../assets/background.png"));
+    sf::RectangleShape bgSprite;
+    bgSprite.setTexture(&bgTexture);
+    auto bgTextureSize = bgTexture.getSize();
+    bgSprite.setPosition(sf::Vector2f(0, 0));
+    bgSprite.setSize(sf::Vector2f(SCREEN_WIDTH, SCREEN_HEIGHT));
+    Point* lastPointClicked = nullptr;
+    sf::Vector2f lastClickPos = sf::Vector2f(-1, -1);
     //sf::Time dt = sf::milliseconds(16.6667);
     const float fps = 60;
     const float dt = 1.0/fps;
-    const float subtick = 100;
+    const float subtick = 10;
     enum Mode mode = PAUSED;
     float accumulator = 0.0f;
     std::string clickedButton;
@@ -38,25 +45,28 @@ int main() {
     sf::Texture playTex(std::filesystem::path("../assets/play.png"));
     sf::Texture drawTex(std::filesystem::path("../assets/draw.png"));
     sf::Texture connectTex(std::filesystem::path("../assets/connect.png"));
+    sf::Texture squareTex(std::filesystem::path("../assets/square.png"));
     Button playButton = Button(sf::Vector2f(0, SIM_HEIGHT), spacing, spacing, sf::Color::White, playTex, "play");
     Button drawButton = Button(sf::Vector2f(spacing, SIM_HEIGHT), spacing, spacing, sf::Color::White, drawTex, "draw");
     Button connectButton = Button(sf::Vector2f(spacing*2, SIM_HEIGHT), spacing, spacing, sf::Color::White, connectTex, "connect");
+    Button squareButton = Button(sf::Vector2f(spacing*3, SIM_HEIGHT), spacing, spacing, sf::Color::White, squareTex, "square");
     buttonList.push_back(&playButton);
     buttonList.push_back(&drawButton);
     buttonList.push_back(&connectButton);
+    buttonList.push_back(&squareButton);
     // Square s1{sf::Vector2f(400, 400), lineList, pointList, vertexList, 150, 1, 0, 10, sf::Vector2f(10, 98)};
     // Square s2{sf::Vector2f(100, 100), lineList, pointList, vertexList, 150, 1, 35, 10, sf::Vector2f(0, 98)};
     // Square s3{sf::Vector2f(700, 100), lineList, pointList, vertexList, 30, 1, 25, 10, sf::Vector2f(40, 98)};
     // Square s4{sf::Vector2f(40, 400), lineList, pointList, vertexList, 40, 1, 15, 10, sf::Vector2f(40, 98)};
     //
-    Square s1{sf::Vector2f(100, 100), lineList, pointList, vertexList, 150, 1, 0, 10, sf::Vector2f(10, 98)};
-    Square s2{sf::Vector2f(150, 300), lineList, pointList, vertexList, 150, 1, 35, 10, sf::Vector2f(0, 98)};
-    Square s3{sf::Vector2f(700, 100), lineList, pointList, vertexList, 30, 1, 25, 10, sf::Vector2f(40, 98)};
-    Square s4{sf::Vector2f(40, 400), lineList, pointList, vertexList, 40, 1, 15, 10, sf::Vector2f(40, 98)};
+    // Square s1{sf::Vector2f(100, 100), lineList, pointList, vertexList, 150, 1, 0, 10, sf::Vector2f(100, 98)};
+    // Square s2{sf::Vector2f(150, 300), lineList, pointList, vertexList, 150, 1, 35, 10, sf::Vector2f(0, 98)};
+    // Square s3{sf::Vector2f(700, 100), lineList, pointList, vertexList, 30, 1, 25, 2, sf::Vector2f(40, 98)};
+    // Square s4{sf::Vector2f(40, 400), lineList, pointList, vertexList, 40, 1, 15, 3, sf::Vector2f(40, 98)};
     while (window.isOpen())
     {
         float frameTime = clock.restart().asSeconds();
-        sf::Vector2i mousePosition = sf::Mouse::getPosition(window);
+        sf::Vector2f mousePosition = sf::Vector2f(sf::Mouse::getPosition(window).x, sf::Mouse::getPosition(window).y);
         if (mode != SIMULATING) {
             for (auto & point : pointList) {
                 point->shouldDraw = true;
@@ -120,6 +130,9 @@ int main() {
                             } else if (button->name == "connect") {
                                 mode = CONNECTION;
                                 clickedButton = button->name;
+                            } else if (button->name == "square") {
+                                mode = SQUARE;
+                                clickedButton = button->name;
                             }
                         }
                     }
@@ -140,15 +153,40 @@ int main() {
                         for (auto & point : pointList) {
                             float dist = distance2f(sf::Vector2f(mousePosition), point->currentPos);
                             if (dist < point->radius) {
-                                if (lastClicked) {
-                                    auto line = LineConstraint{point, lastClicked, 1};
+                                if (lastPointClicked) {
+                                    auto line = LineConstraint{point, lastPointClicked, 1};
                                     line.shouldDraw = true;
                                     lineList.push_back(line);
-                                    lastClicked = nullptr;
+                                    lastPointClicked = nullptr;
                                 } else {
-                                    lastClicked = point;
+                                    lastPointClicked = point;
                                 }
                             }
+                        }
+                    } else if (mode == SQUARE) {
+                        if (lastClickPos.x != -1) {
+
+                            float sideLength;
+                            sf::Vector2f centerPos;
+                            std::cout << lastClickPos.x << "LastClickPos \n";
+                            std::cout << mousePosition.x << "MousePos \n";
+                            if (lastClickPos.x < mousePosition.x) {
+                                sideLength = (mousePosition.x - lastClickPos.x);
+                                centerPos = mousePosition-(mousePosition - lastClickPos)*0.5f;
+                            }
+                            else if (lastClickPos.x > mousePosition.x) {
+                                sideLength = (lastClickPos.x - mousePosition.x);
+                                centerPos = lastClickPos+(lastClickPos - mousePosition)*0.5f;
+                            } else {
+
+                            }
+
+                                //distance2f(lastClickPos, mousePosition) * 1/sqrt(2);
+                            std::cout << sideLength << "\n";
+                            Square* newSquare = new Square(centerPos, lineList, pointList, vertexList, sideLength, 1, 0, 1);
+                            lastClickPos.x = -1;
+                        } else {
+                            lastClickPos = mousePosition;
                         }
                     }
                 }
@@ -171,26 +209,30 @@ int main() {
 
             for (auto & line : lineList) {
                 for (auto & point : pointList) {
+
                     if (line.p0->currentPos != point->currentPos && line.p1->currentPos != point->currentPos) {
+                        #if (PRECISE)
+                            sf::Vector2f motion = point->currentPos - point->oldPos;
+                            float motionLength = std::sqrt(motion.x*motion.x + motion.y*motion.y);
 
-                        sf::Vector2f motion = point->currentPos - point->oldPos;
-                        float motionLength = std::sqrt(motion.x*motion.x + motion.y*motion.y);
+                            int steps = std::max(1, int(std::ceil(motionLength)));
 
-                        int steps = std::max(1, int(std::ceil(motionLength)));
-                        sf::Vector2f stepMotion = motion / float(steps);
+                            sf::Vector2f stepMotion = motion / float(steps);
 
-                        sf::Vector2f interpPos = point->oldPos;
-                        for (int s = 0; s < steps; ++s) {
-                            interpPos += stepMotion;
-                            sf::Vector2f originalPos = point->currentPos;
-                            point->currentPos = interpPos;
+                            sf::Vector2f interpPos = point->oldPos;
+                            for (int s = 0; s < steps; ++s) {
+                                interpPos += stepMotion;
+                                sf::Vector2f originalPos = point->currentPos;
+                                point->currentPos = interpPos;
+                                line.checkPointCollision(point);
+                            }
+                        #else
 
-                            // Collision check at this mini-step
                             line.checkPointCollision(point);
 
-                            // Restore for next mini-step
-                            point->currentPos = point->currentPos;
-                        }
+
+                        #endif
+
 
                     }
                 }
@@ -203,6 +245,7 @@ int main() {
 
 
         window.clear();
+        window.draw(bgSprite);
         for (auto & line : lineList) {
             line.draw(window);
         }
