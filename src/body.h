@@ -175,19 +175,21 @@ public:
     float rotation;
     float stiffness;
     float mass;
-        Square(sf::Vector2f centerPos_, std::vector<LineConstraint>& lineList, std::vector<Point*>& objList, std::vector<VertexRenderer>& vertexList, float sideLength_, float stiffness_, float rotation_, float mass_, sf::Vector2f initialAcceleration_ = sf::Vector2f(0, 98)) {
+    float e;
+        Square(sf::Vector2f centerPos_, std::vector<LineConstraint>& lineList, std::vector<Point*>& objList, std::vector<VertexRenderer>& vertexList, float sideLength_, float stiffness_, float rotation_, float mass_, sf::Vector2f initialAcceleration_ = sf::Vector2f(0, 98), float e_=1) {
             stiffness = stiffness_;
             centerPos = centerPos_;
             sideLength = sideLength_;
             rotation = rotation_;
             mass = mass_;
+            e = e_;
             initialAcceleration = initialAcceleration_;
             sf::Vector2f sideVector{sideLength, sideLength};
             sf::Vector2f sideHalfVector{sideLength/2, sideLength/2};
-            p1 = new Point{(centerPos-sideHalfVector), initialAcceleration, 1, 1, mass};
-            p2 = new Point{sf::Vector2f(centerPos.x+sideHalfVector.x, centerPos.y-sideHalfVector.y), initialAcceleration, 1, 1, mass};
-            p3 = new Point{sf::Vector2f(p2->currentPos.x, p2->currentPos.y + sideLength), initialAcceleration, 1, 1, mass};
-            p4 = new Point{sf::Vector2f(p1->currentPos.x, p1->currentPos.y+sideLength), initialAcceleration, 1, 1, mass};
+            p1 = new Point{(centerPos-sideHalfVector), initialAcceleration, 1, e, mass};
+            p2 = new Point{sf::Vector2f(centerPos.x+sideHalfVector.x, centerPos.y-sideHalfVector.y), initialAcceleration, 1, e, mass};
+            p3 = new Point{sf::Vector2f(p2->currentPos.x, p2->currentPos.y + sideLength), initialAcceleration, 1, e, mass};
+            p4 = new Point{sf::Vector2f(p1->currentPos.x, p1->currentPos.y+sideLength), initialAcceleration, 1, e, mass};
             p1->currentPos = rotateAroundPoint(p1->currentPos, centerPos, rotation);
             p1->oldPos = p1->currentPos;
             p2->currentPos = rotateAroundPoint(p2->currentPos, centerPos, rotation);

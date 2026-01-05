@@ -1,7 +1,6 @@
 #include "body.h"
 #include "include.h"
 #include "ui.h"
-#define PRECISE true
 int main() {
     sf::ContextSettings settings{};
     settings.antiAliasingLevel = 8;
@@ -23,6 +22,7 @@ int main() {
     float drag=0;
     enum Mode mode = PAUSED;
     float accumulator = 0.0f;
+    bool precise = true;
     std::string clickedButton;
     std::vector<Point*> pointList{};
     std::vector<Point*> pointClickedList{};
@@ -37,18 +37,26 @@ int main() {
     sf::Texture squareTex(std::filesystem::path("../assets/square.png"));
     sf::Texture vertexTex(std::filesystem::path("../assets/vertex.png"));
     sf::Texture dragTex(std::filesystem::path("../assets/drag.png"));
+    sf::Texture preciseTex(std::filesystem::path("../assets/precise.png"));
     Button playButton = Button(sf::Vector2f(0, SIM_HEIGHT), spacing, spacing, sf::Color::White, playTex, "play");
     Button drawButton = Button(sf::Vector2f(spacing, SIM_HEIGHT), spacing, spacing, sf::Color::White, drawTex, "draw");
     Button connectButton = Button(sf::Vector2f(spacing*2, SIM_HEIGHT), spacing, spacing, sf::Color::White, connectTex, "connect");
     Button squareButton = Button(sf::Vector2f(spacing*3, SIM_HEIGHT), spacing, spacing, sf::Color::White, squareTex, "square");
     Button vertexButton = Button(sf::Vector2f(spacing*4, SIM_HEIGHT), spacing, spacing, sf::Color::White, vertexTex, "vertex");
     Button dragButton = Button(sf::Vector2f(spacing*5, SIM_HEIGHT), spacing, spacing, sf::Color::White, dragTex, "drag");
+    Button preciseButton = Button(sf::Vector2f(spacing*6, SIM_HEIGHT), spacing, spacing, sf::Color::White, preciseTex, "precise");
+    if (precise) {
+        preciseButton.backgroundColor = sf::Color::Green;
+    } else {
+        preciseButton.backgroundColor = sf::Color::Red;
+    }
     buttonList.push_back(&playButton);
     buttonList.push_back(&drawButton);
     buttonList.push_back(&connectButton);
     buttonList.push_back(&squareButton);
     buttonList.push_back(&vertexButton);
     buttonList.push_back(&dragButton);
+    buttonList.push_back(&preciseButton);
     while (window.isOpen()) {
         float frameTime = clock.restart().asSeconds();
         sf::Vector2f mousePosition = sf::Vector2f(sf::Mouse::getPosition(window).x, sf::Mouse::getPosition(window).y);
@@ -145,13 +153,20 @@ int main() {
                                 clickedButton = button->name;
                             } else if (button->name == "drag") {
                                 drag = getUserInput<float>("Enter Drag (0-1): ", "0");
+                            } else if (button->name == "precise") {
+                                precise = !precise;
+                                if (precise) {
+                                    button->backgroundColor = sf::Color::Green;
+                                } else {
+                                    button->backgroundColor = sf::Color::Red;
+                                }
                             }
                         }
                     }
                     for (auto & button : buttonList) {
                         if (clickedButton == button->name) {
                             button->backgroundColor = gray;
-                        } else {
+                        } else if (button->name != "precise") {
                             button->backgroundColor = sf::Color::White;
                         }
                     }
@@ -178,11 +193,7 @@ int main() {
                     } else if (mode == SQUARE) {
                         if (lastClickPos.x != -1) {
 
-                            float sideLength;
-                            float angle;
-                            float kg;
-                            float iniAccelX;
-                            float iniAccelY;
+                            float sideLength, angle, kg, iniAccelX, iniAccelY, e;
 
                             sf::Vector2f centerPos;
                             // std::cout << lastClickPos.x << "LastClickPos \n";
@@ -199,9 +210,10 @@ int main() {
                             }
                             angle = getUserInput<float>("Enter Angle (degrees): ", "0");
                             kg = getUserInput<float>("Enter Mass (kg): ", "1");
+                            e = getUserInput<float>("Enter Coefficient of Restitution (0-1): ", "1");
                             iniAccelX = getUserInput<float>("Enter Initial Acceleration X: ", "0");
                             iniAccelY = getUserInput<float>("Enter Initial Acceleration Y: ", "98");
-                            Square* newSquare = new Square(centerPos, lineList, pointList, vertexList, sideLength, 1, angle, kg, sf::Vector2f(iniAccelX, iniAccelY));
+                            Square* newSquare = new Square(centerPos, lineList, pointList, vertexList, sideLength, 1, angle, kg, sf::Vector2f(iniAccelX, iniAccelY), e);
                             lastClickPos.x = -1;
                         } else {
                             lastClickPos = mousePosition;
@@ -251,27 +263,23 @@ int main() {
                             for (auto & point : pointList) {
 
                                 if (line.p0->currentPos != point->currentPos && line.p1->currentPos != point->currentPos) {
-#if (PRECISE)
-                                    sf::Vector2f motion = point->currentPos - point->oldPos;
-                                    float motionLength = std::sqrt(motion.x*motion.x + motion.y*motion.y);
+                                    if (precise) {
+                                        sf::Vector2f motion = point->currentPos - point->oldPos;
+                                        float motionLength = std::sqrt(motion.x*motion.x + motion.y*motion.y);
 
-                                    int steps = std::max(1, int(std::ceil(motionLength)));
-                                    sf::Vector2f stepMotion = motion / float(steps);
+                                        int steps = std::max(1, int(std::ceil(motionLength)));
+                                        sf::Vector2f stepMotion = motion / float(steps);
 
-                                    sf::Vector2f interpPos = point->oldPos;
-                                    for (int s = 0; s < steps; ++s) {
-                                        interpPos += stepMotion;
-                                        sf::Vector2f originalPos = point->currentPos;
-                                        point->currentPos = interpPos;
+                                        sf::Vector2f interpPos = point->oldPos;
+                                        for (int s = 0; s < steps; ++s) {
+                                            interpPos += stepMotion;
+                                            sf::Vector2f originalPos = point->currentPos;
+                                            point->currentPos = interpPos;
+                                            line.checkPointCollision(point);
+                                        }
+                                    } else {
                                         line.checkPointCollision(point);
                                     }
-#else
-
-
-
-#endif
-
-
                                 }
                             }
                         }
