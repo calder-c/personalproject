@@ -106,7 +106,8 @@ int main() {
                         VertexRenderer vertexShape;
                         vertexShape.fillColor = orange1;
                         int stiffness = 1;
-                        float kg = getUserInput<float>("Enter Mass (kg): ", "1");
+                        float kg = std::min(getUserInput<float>("Enter Mass (1-10kg): ", "1"), 10.0f);
+                        kg = std::max(1.0f, kg);
                         float iniAccelX = getUserInput<float>("Enter Initial Acceleration X: ", "0");
                         float iniAccelY = getUserInput<float>("Enter Initial Acceleration Y: ", "98");
                         for (auto & point : pointClickedList) {

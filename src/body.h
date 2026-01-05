@@ -106,6 +106,11 @@ public:
         }
     }
     void applyLineConstraint() {
+        constexpr float EPS = 1e-2f;
+        if ((p0->currentPos - p0->oldPos).lengthSquared() < EPS &&
+        (p1->currentPos - p1->oldPos).lengthSquared() < EPS) {
+            return;
+        }
         float dx = p1->currentPos.x - p0->currentPos.x;
         float dy = p1->currentPos.y - p0->currentPos.y;
         float dist = sqrt(dx*dx + dy*dy);
