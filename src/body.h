@@ -51,12 +51,13 @@ public:
     }
 
 };
-struct VertexRenderer {
+class VertexRenderer {
+public:
+    bool initialized = false;
     std::vector<Point*> pointList;
     sf::Color fillColor;
-
-    void draw (sf::RenderWindow & window) {
-        sf::ConvexShape shape;
+    sf::ConvexShape shape;
+    void init() {
         shape.setPointCount(pointList.size());
         shape.setFillColor(fillColor);
         int index = 0;
@@ -75,6 +76,11 @@ struct VertexRenderer {
         }
         shape.setOutlineThickness(3);
         shape.setOutlineColor(gray);
+    }
+    void draw (sf::RenderWindow & window) {
+        if (!initialized) {
+            init();
+        }
         window.draw(shape);
     }
 };
@@ -212,7 +218,7 @@ public:
             lineList.push_back(l3);
             lineList.push_back(l4);
             lineList.push_back(l5);
-            VertexRenderer newVertex{};
+            VertexRenderer newVertex;
             newVertex.fillColor = orange1;
             newVertex.pointList.push_back(p1);
             newVertex.pointList.push_back(p2);
