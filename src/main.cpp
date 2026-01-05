@@ -38,9 +38,6 @@ int main() {
     sf::Texture vertexTex(std::filesystem::path("../assets/vertex.png"));
     sf::Texture dragTex(std::filesystem::path("../assets/drag.png"));
     sf::Texture subtickTex(std::filesystem::path("../assets/subtick.png"));
-    Square s1(sf::Vector2f(250, 250), lineList, pointList, vertexList, 100, 1, 0, 1, sf::Vector2f(20, 98));
-    Square s2(sf::Vector2f(450, 100), lineList, pointList, vertexList, 100, 1, 0, 1, sf::Vector2f(-198, 150));
-    Square s3(sf::Vector2f(110, 400), lineList, pointList, vertexList, 100, 1, 0, 1, sf::Vector2f(0, 98));
     Button playButton = Button(sf::Vector2f(0, SIM_HEIGHT), spacing, spacing, sf::Color::White, playTex, "play");
     Button drawButton = Button(sf::Vector2f(spacing, SIM_HEIGHT), spacing, spacing, sf::Color::White, drawTex, "draw");
     Button connectButton = Button(sf::Vector2f(spacing*2, SIM_HEIGHT), spacing, spacing, sf::Color::White, connectTex, "connect");
