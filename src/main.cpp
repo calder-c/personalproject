@@ -36,21 +36,21 @@ int main() {
     sf::Texture connectTex(std::filesystem::path("../assets/connect.png"));
     sf::Texture squareTex(std::filesystem::path("../assets/square.png"));
     sf::Texture vertexTex(std::filesystem::path("../assets/vertex.png"));
-    sf::Texture dragTex(std::filesystem::path("../assets/drag.png"));
+    sf::Texture clearTex(std::filesystem::path("../assets/clear.png"));
     sf::Texture subtickTex(std::filesystem::path("../assets/subtick.png"));
     Button playButton = Button(sf::Vector2f(0, SIM_HEIGHT), spacing, spacing, sf::Color::White, playTex, "play");
     Button drawButton = Button(sf::Vector2f(spacing, SIM_HEIGHT), spacing, spacing, sf::Color::White, drawTex, "draw");
     Button connectButton = Button(sf::Vector2f(spacing*2, SIM_HEIGHT), spacing, spacing, sf::Color::White, connectTex, "connect");
     Button squareButton = Button(sf::Vector2f(spacing*3, SIM_HEIGHT), spacing, spacing, sf::Color::White, squareTex, "square");
     Button vertexButton = Button(sf::Vector2f(spacing*4, SIM_HEIGHT), spacing, spacing, sf::Color::White, vertexTex, "vertex");
-    Button dragButton = Button(sf::Vector2f(spacing*5, SIM_HEIGHT), spacing, spacing, sf::Color::White, dragTex, "drag");
+    Button clearButton = Button(sf::Vector2f(spacing*5, SIM_HEIGHT), spacing, spacing, sf::Color::White, clearTex, "clear");
     Button subtickButton = Button(sf::Vector2f(spacing*6, SIM_HEIGHT), spacing, spacing, sf::Color::White, subtickTex, "subtick");
     buttonList.push_back(&playButton);
     buttonList.push_back(&drawButton);
     buttonList.push_back(&connectButton);
     buttonList.push_back(&squareButton);
     buttonList.push_back(&vertexButton);
-    buttonList.push_back(&dragButton);
+    buttonList.push_back(&clearButton);
     buttonList.push_back(&subtickButton);
     while (window.isOpen()) {
         float frameTime = clock.restart().asSeconds();
@@ -147,8 +147,11 @@ int main() {
                             } else if (button->name == "vertex") {
                                 mode = VERTEX;
                                 clickedButton = button->name;
-                            } else if (button->name == "drag") {
-                                drag = getUserInput<float>("Enter Drag (0-1): ", "0");
+                            } else if (button->name == "clear") {
+                                pointList = {};
+                                pointClickedList = {};
+                                lineList = {};
+                                vertexList = {};
                             } else if (button->name == "subtick") {
                                 subtick = getUserInput<float>("Enter amount of subticks: ", "20");
                             }
